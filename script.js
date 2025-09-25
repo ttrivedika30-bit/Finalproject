@@ -171,6 +171,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Uploads persistence
+    function getUploads() {
+        try { return JSON.parse(localStorage.getItem('uploads')||'[]'); } catch { return []; }
+    }
+    function saveUpload(item) {
+        const items = getUploads();
+        items.unshift(item);
+        localStorage.setItem('uploads', JSON.stringify(items.slice(0, 30)));
+    }
+    if (globalFileInput) {
+        globalFileInput.addEventListener('change', (e)=>{
+            const files = Array.from(e.target.files||[]);
+            files.forEach(file => {
+                // Create an object URL to allow opening the file in a new tab
+                const url = URL.createObjectURL(file);
+                saveUpload({ name: file.name, url, ts: Date.now(), size: file.size, type: file.type });
+            });
+            // If currently on documents page, refresh the list
+            if (contentArea && contentArea.querySelector('#recentUploads')) {
+                loadDocuments();
+            }
+        });
+    }
+
     // Fullscreen quiz/contest flow with topic-specific complex questions and MCQ options
     const QUESTIONS = {
         quiz: Array.from({length:10}, (_,i)=>({ q: `Q${i+1}. For n≥1, ∑_{k=1}^{n} (2k-1) = ?`, options:['n(n+1)','n^2','2n-1','n!'], correct:1 })),
@@ -187,10 +211,14 @@ document.addEventListener('DOMContentLoaded', function() {
         ai: [ { q:'Logistic regression uses which link?', options:['Identity','Logit','Probit','Poisson'], correct:1 } ]
     };
     let activeSet = 'quiz';
+    let activeTitle = 'Quiz';
     let quizIndex = 0;
+    let quizCorrectCount = 0;
     function openQuizFlow(title='Quiz', set='quiz') {
         activeSet = set;
+        activeTitle = title || 'Quiz';
         quizIndex = 0;
+        quizCorrectCount = 0;
         if (quizPageTitle) quizPageTitle.textContent = title;
         showQuizQuestion();
         if (quizPage) quizPage.style.display = 'flex';
@@ -217,14 +245,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 const sel = document.querySelector('input[name="quizOpt"]:checked');
                 if (!sel) { alert('Please select an option.'); return; }
                 const chosen = parseInt(sel.value,10);
-                if (chosen !== item.correct) { alert('Incorrect.'); } else { alert('Correct!'); }
+                if (chosen !== item.correct) { alert('Incorrect.'); } else { quizCorrectCount++; alert('Correct!'); }
             }
             quizIndex++;
-            if (quizIndex >= list.length) { closeQuiz(); return; }
+            if (quizIndex >= list.length) {
+                // Save result and navigate to Overview
+                const total = list.length;
+                const scorePct = Math.round((quizCorrectCount / total) * 100);
+                saveAssessmentResult({
+                    title: activeTitle,
+                    kind: activeSet,
+                    correct: quizCorrectCount,
+                    total,
+                    score: scorePct,
+                    ts: Date.now()
+                });
+                closeQuiz();
+                loadOverview();
+                setTimeout(()=>{
+                    const results = document.getElementById('recentResults');
+                    if (results) results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 50);
+                return;
+            }
             showQuizQuestion();
         });
     }
     if (quizBack) quizBack.addEventListener('click', closeQuiz);
+
+    // Persist assessment results in localStorage
+    function getAssessmentResults() {
+        try { return JSON.parse(localStorage.getItem('assessmentResults')||'[]'); } catch { return []; }
+    }
+    function saveAssessmentResult(result) {
+        const list = getAssessmentResults();
+        list.unshift(result);
+        localStorage.setItem('assessmentResults', JSON.stringify(list.slice(0, 20)));
+    }
 
     // Labs fullpage: open per-topic with large content and back arrow
     const LAB_DETAILS = {
@@ -1104,71 +1161,27 @@ contentArea.innerHTML = `
             
             <div class="recent-uploads">
                 <h2 class="section-title">Recent Uploads</h2>
-                <div class="upload-list">
-                    <div class="upload-item">
-                        <i class="fas fa-file-pdf"></i>
-                        <div class="upload-info">
-                            <h4>Computer Science Syllabus.pdf</h4>
-                            <p>75% complete • Uploaded 2024-01-15</p>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 75%"></div>
-                            </div>
-                        </div>
-                        <div class="upload-actions">
-                            <i class="fas fa-eye"></i>
-                            <i class="fas fa-download"></i>
-                            <i class="fas fa-trash"></i>
-                        </div>
-                    </div>
-                    <div class="upload-item">
-                        <i class="fas fa-file-word"></i>
-                        <div class="upload-info">
-                            <h4>Mathematics Notes.docx</h4>
-                            <p>45% complete • Uploaded 2024-01-10</p>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 45%"></div>
-                            </div>
-                        </div>
-                        <div class="upload-actions">
-                            <i class="fas fa-eye"></i>
-                            <i class="fas fa-download"></i>
-                            <i class="fas fa-trash"></i>
-                        </div>
-                    </div>
-                    <div class="upload-item">
-                        <i class="fas fa-file-pdf"></i>
-                        <div class="upload-info">
-                            <h4>Physics Lab Report.pdf</h4>
-                            <p>Completed • Uploaded 2024-01-20</p>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div class="upload-actions">
-                            <i class="fas fa-eye"></i>
-                            <i class="fas fa-download"></i>
-                            <i class="fas fa-trash"></i>
-                        </div>
-                    </div>
-                    <div class="upload-item">
-                        <i class="fas fa-file-powerpoint"></i>
-                        <div class="upload-info">
-                            <h4>Chemistry Exam Prep.pptx</h4>
-                            <p>Completed • Uploaded 2024-01-22</p>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div class="upload-actions">
-                            <i class="fas fa-eye"></i>
-                            <i class="fas fa-download"></i>
-                            <i class="fas fa-trash"></i>
-                        </div>
-                    </div>
-                </div>
+                <div class="upload-list" id="recentUploads"></div>
             </div>
         `;
         bindUploadTriggers(contentArea);
+        // Render dynamic uploads
+        const uploadsHost = document.getElementById('recentUploads');
+        if (uploadsHost) {
+            const items = getUploads();
+            uploadsHost.innerHTML = items.length ? items.slice(0,10).map(u=>`
+                <div class="upload-item">
+                    <i class="fas fa-file-alt"></i>
+                    <div class="upload-info">
+                        <h4>${u.name}</h4>
+                        <p>Uploaded ${new Date(u.ts).toLocaleString()}</p>
+                    </div>
+                    <div class="upload-actions">
+                        <a href="${u.url}" target="_blank" rel="noopener" title="Open"><i class="fas fa-external-link-alt"></i></a>
+                    </div>
+                </div>
+            `).join('') : '<p style="color:#64748b">No uploads yet. Click Upload Document to add your syllabus.</p>';
+        }
     }
     
     // AI Mentor Page
@@ -1291,6 +1304,11 @@ contentArea.innerHTML = `
                             </div>
                         </div>
                     </div>
+                    <div class="progress-chart" id="aiPerformanceInsights" style="margin-top:1rem;">
+                        <h4>Performance Analysis & Study Plan</h4>
+                        <div id="aiAnalysisText" style="color:#0f172a; line-height:1.6;">
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -1334,6 +1352,32 @@ contentArea.innerHTML = `
         // Daily learning detail
         const daily = contentArea.querySelector('#dailyLearningChart');
         if (daily) daily.addEventListener('click', ()=> openMentorResource('daily_learning'));
+
+        // Build simple analysis and plan from recent results
+        const analysisHost = contentArea.querySelector('#aiAnalysisText');
+        if (analysisHost) {
+            const results = getAssessmentResults();
+            if (!results.length) {
+                analysisHost.innerHTML = '<p>No recent assessments yet. Take a quiz or contest to receive tailored analysis and a study plan here.</p>';
+            } else {
+                const last5 = results.slice(0,5);
+                const avg = Math.round(last5.reduce((a,b)=>a+b.score,0)/last5.length);
+                const weak = last5.filter(r=>r.score<70).map(r=>r.title);
+                const trend = last5[0] && last5[last5.length-1] ? (last5[0].score - last5[last5.length-1].score >= 5 ? 'improving' : (last5[last5.length-1].score - last5[0].score >= 5 ? 'declining' : 'stable')) : 'stable';
+                analysisHost.innerHTML = `
+                    <p><strong>Summary:</strong> Your recent average score is <strong>${avg}%</strong> across ${last5.length} assessments and your trend looks <strong>${trend}</strong>.</p>
+                    ${weak.length?`<p><strong>Focus areas:</strong> ${weak.join(', ')}.</p>`:''}
+                    <p><strong>Next 7‑day plan:</strong></p>
+                    <ul style="margin-left:1rem;">
+                        <li>Day 1–2: Review mistakes from your latest attempts; rework incorrect questions.</li>
+                        <li>Day 3–4: Target weak topics with 2 short practice sets daily (10–15 mins each).</li>
+                        <li>Day 5: Take a mixed quiz; aim for +10% over last score.</li>
+                        <li>Day 6: Summarize key formulas/ideas into a one‑page note.</li>
+                        <li>Day 7: Full practice quiz/contest; compare to baseline.</li>
+                    </ul>
+                `;
+            }
+        }
     }
     
     // Quizzes Page
@@ -1586,6 +1630,31 @@ contentArea.innerHTML = `
                         </div>
                     </div>
                 </div>
+                <div class="focus-times" id="interactiveTimetable">
+                    <h3>Interactive Timetable</h3>
+                    <p>Auto-adjusts using your assignments, exams, and study time preferences.</p>
+                    <div class="card" style="margin-bottom:1rem;">
+                        <div class="card-header"><h3>Add Assignment / Exam</h3></div>
+                        <div class="card-content">
+                            <form id="plannerForm" class="note-form">
+                                <input class="note-title-input" name="title" placeholder="Title (e.g., Algebra Assignment 2)">
+                                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                    <input class="note-title-input" name="due" type="date" placeholder="Due date">
+                                    <select class="priority-select" name="type">
+                                        <option value="assignment">Assignment</option>
+                                        <option value="exam">Exam</option>
+                                    </select>
+                                    <input class="note-title-input" name="hours" type="number" step="0.5" min="0" placeholder="Est. hours">
+                                </div>
+                                <div class="note-actions">
+                                    <button class="btn-primary" type="submit">Add</button>
+                                    <button class="btn-secondary" type="button" id="clearPlanner">Clear All</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                </div>
             </div>
         `;
         // Bind 30-minute focus session to control quizzes/contests
@@ -1611,6 +1680,71 @@ contentArea.innerHTML = `
                 }
             }, 1000);
         });
+        // Timetable storage helpers
+        function getPlannerItems(){ try { return JSON.parse(localStorage.getItem('plannerItems')||'[]'); } catch { return []; } }
+        function savePlannerItems(items){ localStorage.setItem('plannerItems', JSON.stringify(items)); }
+        function addPlannerItem(item){ const arr = getPlannerItems(); arr.push(item); savePlannerItems(arr); }
+        function clearPlanner(){ savePlannerItems([]); }
+
+        // Auto-schedule: simple heuristic for next 7 days
+        function buildSchedule(items){
+            const plan = [];
+            const today = new Date(); today.setHours(0,0,0,0);
+            const preferred = (getStoredProfile()?.learningTime)||'evening';
+            const dailySlots = preferred==='morning' ? [8] : preferred==='evening' ? [19] : [16];
+            items.sort((a,b)=> new Date(a.due) - new Date(b.due));
+            for (const it of items){
+                let remaining = Math.max(0, Number(it.hours)||0);
+                const due = new Date(it.due); due.setHours(0,0,0,0);
+                let d = new Date(today);
+                while (remaining > 0 && d <= due){
+                    for (const hr of dailySlots){
+                        if (remaining <= 0) break;
+                        plan.push({ date: new Date(d), hour: hr, title: it.title, type: it.type });
+                        remaining = Math.max(0, remaining - 1);
+                    }
+                    d.setDate(d.getDate()+1);
+                }
+            }
+            return plan.filter(x=> (x.date - today) <= 6*24*3600*1000);
+        }
+
+        function renderSchedule(){
+            const host = document.getElementById('timetableGrid');
+            if (!host) return;
+            const items = getPlannerItems();
+            const schedule = buildSchedule(items);
+            const byDay = {};
+            schedule.forEach(s=>{
+                const key = s.date.toDateString();
+                (byDay[key] ||= []).push(s);
+            });
+            const days = Array.from({length:7}, (_,i)=>{ const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+i); return d; });
+            host.innerHTML = `<div class="activity-grid">${days.map(d=>{
+                const key = d.toDateString();
+                const list = (byDay[key]||[]).map(s=>
+                    `<div class=\"activity-item\"><div class=\"activity-icon ${'${'}s.type==='exam'?'yellow':'blue'${'}'}\"><i class=\"fas ${'${'}s.type==='exam'?'fa-calendar':'fa-book'${'}'}\"></i></div><div class=\"activity-content\"><div class=\"activity-text\">${'${'}s.title${'}'}</div><div class=\"activity-time\">${'${'}d.toLocaleDateString('en-US')${'}'} • ${'${'}String(s.hour).padStart(2,'0')${'}'}:00</div></div></div>`
+                ).join('') || '<p style=\"color:#64748b\">No sessions scheduled.</p>';
+                return `<div class=\"card\"><div class=\"card-header\"><h3>${'${'}d.toLocaleDateString('en-US',{weekday:'short', month:'short', day:'numeric'})${'}'}</h3></div><div class=\"card-content\">${'${'}list${'}'}</div></div>`;
+            }).join('')}</div>`;
+        }
+
+        const pf = document.getElementById('plannerForm');
+        const clearBtn = document.getElementById('clearPlanner');
+        if (pf) pf.addEventListener('submit', (e)=>{
+            e.preventDefault();
+            const fd = new FormData(pf);
+            const title = String(fd.get('title')||'').trim();
+            const due = String(fd.get('due')||'');
+            const type = String(fd.get('type')||'assignment');
+            const hours = Number(fd.get('hours')||'1');
+            if (!title || !due) { alert('Please provide a title and due date.'); return; }
+            addPlannerItem({ title, due, type, hours });
+            pf.reset();
+            renderSchedule();
+        });
+        if (clearBtn) clearBtn.addEventListener('click', ()=>{ if(confirm('Clear all planner items?')){ clearPlanner(); renderSchedule(); }});
+        renderSchedule();
     }
     
     // Social Page
@@ -2372,6 +2506,13 @@ contentArea.innerHTML = `
                         <div id="focusHeatmap" class="heatmap-grid"></div>
                         <div style="margin-top:8px; color:#64748b; font-size:0.9rem;">Last 6 months</div>
                     </div>
+                    <div class="overview-card" id="recentResults">
+                        <div class="card-header">
+                            <i class="fas fa-chart-bar"></i>
+                            <h3>Recent Quiz & Contest Results</h3>
+                        </div>
+                        <div id="resultsList"></div>
+                    </div>
                 </div>
             </div>
         `;
@@ -2391,6 +2532,25 @@ contentArea.innerHTML = `
                 cell.style.borderRadius = '3px';
                 cell.style.background = `rgba(16, 185, 129, ${alpha})`;
                 container.appendChild(cell);
+            }
+        }
+
+        // Render recent assessment results
+        const resultsTarget = document.getElementById('resultsList');
+        if (resultsTarget) {
+            const results = getAssessmentResults();
+            if (!results.length) {
+                resultsTarget.innerHTML = `<p style="color:#64748b;">No results yet. Try a quiz or contest to see your performance here.</p>`;
+            } else {
+                resultsTarget.innerHTML = results.slice(0,5).map(r=>`
+                    <div class="activity-item" style="margin-bottom:8px;">
+                        <div class="activity-icon ${r.kind==='contest'?'yellow':'blue'}"><i class="fas ${r.kind==='contest'?'fa-trophy':'fa-check'}"></i></div>
+                        <div class="activity-content">
+                            <div class="activity-text">${r.title} — ${r.score}% (${r.correct}/${r.total})</div>
+                            <div class="activity-time">${new Date(r.ts).toLocaleString()}</div>
+                        </div>
+                    </div>
+                `).join('');
             }
         }
     }
