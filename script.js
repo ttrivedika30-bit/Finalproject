@@ -98,8 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const getStartedBtn = document.getElementById('getStartedBtn');
     const appContainer = document.querySelector('.container');
     const globalFileInput = document.getElementById('globalFileInput');
-    const netlifyProfileBtn = document.getElementById('netlifyProfileBtn');
-    const netlifyUploadBtn = document.getElementById('uploadBtn');
     const quizPage = document.getElementById('quizPage');
     const quizPageTitle = document.getElementById('quizPageTitle');
     const quizPrompt = document.getElementById('quizPrompt');
@@ -172,62 +170,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-
-    // Netlify Identity helpers
-    async function callGetProfile() {
-        const netlifyIdentity = window.netlifyIdentity;
-        if (!netlifyIdentity) { alert('Netlify Identity not loaded'); return; }
-        const currentUser = netlifyIdentity.currentUser();
-        if (!currentUser) {
-            netlifyIdentity.open();
-            return;
-        }
-        try {
-            const token = (await currentUser.jwt()).access_token;
-            const res = await fetch('/.netlify/functions/getProfile', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const json = await res.json();
-            console.log('profile result:', json);
-            alert('Profile fetched. See console for details.');
-        } catch (e) {
-            console.error('getProfile failed', e);
-            alert('Failed to fetch profile.');
-        }
-    }
-
-    async function uploadSyllabusViaNetlify() {
-        const netlifyIdentity = window.netlifyIdentity;
-        if (!netlifyIdentity) { alert('Netlify Identity not loaded'); return; }
-        const fileInput = document.getElementById('file');
-        const f = fileInput && fileInput.files && fileInput.files[0];
-        if (!f) { alert('select file'); return; }
-        const currentUser = netlifyIdentity.currentUser();
-        if (!currentUser) { netlifyIdentity.open(); return; }
-        const reader = new FileReader();
-        reader.onload = async () => {
-            try {
-                const base64 = reader.result.split(',')[1];
-                const token = (await currentUser.jwt()).access_token;
-                const body = { filename: f.name, contentType: f.type, dataBase64: base64 };
-                const res = await fetch('/.netlify/functions/uploadSyllabus', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify(body)
-                });
-                const j = await res.json();
-                console.log('upload response', j);
-                alert('Upload completed. See console for details.');
-            } catch (e) {
-                console.error('upload failed', e);
-                alert('Upload failed.');
-            }
-        };
-        reader.readAsDataURL(f);
-    }
-
-    if (netlifyProfileBtn) netlifyProfileBtn.addEventListener('click', callGetProfile);
-    if (netlifyUploadBtn) netlifyUploadBtn.addEventListener('click', uploadSyllabusViaNetlify);
 
     // Uploads persistence
     function getUploads() {
