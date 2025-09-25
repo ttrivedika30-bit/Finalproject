@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextHorizon - Learning Platform</title>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen" aria-hidden="false">
+        <img id="splashImg" src="splash-hero.png.jpg" alt="Splash" onerror="this.onerror=null; this.src='https://drive.google.com/uc?export=download&id=11yLKs7iShN2QH-nyudYCYJpQjol5jRjD'" />
+        <div class="splash-card">
+            <div class="splash-title">NextHorizon</div>
+            <button id="getStartedBtn" class="splash-btn">GET STARTED</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-book-open logo-book" aria-hidden="true"></i>
+                    <span class="logo-text">NextHorizon</span>
+                </div>
+            </div>
+            <nav class="main-nav">
+                <a href="#dashboard" class="nav-link active">Dashboard</a>
+                <a href="#documents" class="nav-link">Documents</a>
+                <a href="#ai-mentor" class="nav-link">AI Mentor</a>
+                <a href="#quizzes" class="nav-link">Quizzes</a>
+                <a href="#focus" class="nav-link">Focus</a>
+                <a href="#social" class="nav-link">Social</a>
+                <a href="#labs" class="nav-link">Labs</a>
+                <a href="#notes" class="nav-link">Notes</a>
+            </nav>
+            <div class="header-right">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </div>
+                <div class="notifications" id="notificationsBtn">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="user-profile-dropdown">
+                    <div class="user-avatar" id="userAvatar">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face" alt="User">
+                    </div>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=60&h=60&fit=crop&crop=face" alt="User">
+                            </div>
+                            <div class="profile-info">
+                                <h3>Sarah Johnson</h3>
+                                <p>Computer Science Student</p>
+                            </div>
+                        </div>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-trophy"></i>
+                                <span>23 Achievements</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-users"></i>
+                                <span>38 Friends</span>
+                            </div>
+                        </div>
+                        <div class="profile-actions">
+                            <a href="#" class="profile-action">
+                                <i class="fas fa-user"></i>
+                                <span>Profile</span>
+                            </a>
+                            <a href="#" class="profile-action">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
+                            <a href="#" class="profile-action">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <!-- Left Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="sidebar-section">
+                    <h3>YOUR PROGRESS</h3>
+                    <div class="progress-item" data-page="streaks">
+                        <i class="fas fa-fire"></i>
+                        <span>Streaks</span>
+                        <div class="streak-badge">5</div>
+                    </div>
+                    <div class="progress-item" data-page="badges">
+                        <i class="fas fa-medal"></i>
+                        <span>Badges</span>
+                    </div>
+                    <div class="progress-item" data-page="syllabus">
+                        <i class="fas fa-book"></i>
+                        <span>Syllabus Progress</span>
+                    </div>
+                    <div class="progress-item" data-page="portfolio">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Portfolio</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>QUICK ACTIONS</h3>
+                    <div class="action-item" data-page="documents">
+                        <i class="fas fa-upload"></i>
+                        <span>Upload Document</span>
+                    </div>
+                    <div class="action-item" data-page="notes">
+                        <i class="fas fa-sticky-note"></i>
+                        <span>My Notes</span>
+                    </div>
+                    <div class="action-item" data-page="overview">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Overview</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-bottom">
+                    <div class="action-item" data-page="settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <div id="content-area">
+                    <!-- Dashboard Content will be loaded here -->
+                </div>
+            </main>
+        </div>
+
+        <!-- Floating Sidebar Toggle (visible when sidebar hidden) -->
+        <button class="sidebar-fab" id="sidebarFab" aria-label="Toggle Sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Floating Ask AI Button -->
+        <div class="floating-ask-ai" id="floatingAskAI">
+            <i class="fas fa-comments"></i>
+            <span>Ask AI</span>
+        </div>
+        <div class="ai-chat-panel" id="aiChatPanel" aria-hidden="true">
+            <div class="ai-chat-header">
+                <span><i class="fas fa-robot"></i> AI Chat</span>
+                <button class="ai-chat-close" id="aiChatClose" aria-label="Close Chat"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="ai-chat-body" id="aiChatBody">
+                <div class="message ai-message">
+                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="message-content"><p>Hi! Ask me anything.</p></div>
+                </div>
+            </div>
+            <div class="ai-chat-input">
+                <input type="text" id="aiChatInput" placeholder="Type your message...">
+                <button id="aiChatSend"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-left">
+                <a href="#">Learn</a>
+                <a href="#">Connect</a>
+                <a href="#">Support</a>
+            </div>
+            <div class="footer-right">
+                <i class="fab fa-twitter"></i>
+                <i class="fab fa-linkedin"></i>
+                <i class="fab fa-github"></i>
+                <i class="fab fa-youtube"></i>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Global hidden file input for uploads -->
+    <input id="globalFileInput" type="file" multiple style="display:none" />
+
+    <!-- Simple Quiz/Contest Modal -->
+    <div id="quizPage" class="fullpage" style="display:none;">
+        <div class="fullpage-header">
+            <button id="quizBack" class="back-btn" aria-label="Go Back"><i class="fas fa-arrow-left"></i></button>
+            <h2 id="quizPageTitle">Quiz</h2>
+        </div>
+        <div class="fullpage-body">
+            <div id="quizProgress" class="fp-progress"></div>
+            <div id="quizPrompt" class="fp-question"></div>
+            <div class="fp-actions">
+                <button id="quizNext" class="btn-primary">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Labs Fullpage Modal -->
+    <div id="labPage" class="fullpage" style="display:none;">
+        <div class="fullpage-header">
+            <button id="labBack" class="back-btn" aria-label="Go Back"><i class="fas fa-arrow-left"></i></button>
+            <h2 id="labPageTitle">Lab</h2>
+        </div>
+        <div class="fullpage-body" id="labBody">
+            <!-- Filled dynamically with large topic-specific content -->
+        </div>
+    </div>
+
+    <!-- AI Mentor Resource Fullpage -->
+    <div id="mentorResourcePage" class="fullpage" style="display:none;">
+        <div class="fullpage-header">
+            <button id="mentorResourceBack" class="back-btn" aria-label="Go Back"><i class="fas fa-arrow-left"></i></button>
+            <h2 id="mentorResourceTitle">Resource</h2>
+        </div>
+        <div class="fullpage-body" id="mentorResourceBody"></div>
+    </div>
+
+    <!-- Notes Fullpage Modal -->
+    <div id="notesPage" class="fullpage" style="display:none;">
+        <div class="fullpage-header">
+            <button id="notesBack" class="back-btn" aria-label="Go Back"><i class="fas fa-arrow-left"></i></button>
+            <h2 id="notesPageTitle">Notes</h2>
+        </div>
+        <div class="fullpage-body" id="notesBody"></div>
+    </div>
+
+    <!-- Dashboard List Fullpage -->
+    <div id="dashListPage" class="fullpage" style="display:none;">
+        <div class="fullpage-header">
+            <button id="dashListBack" class="back-btn" aria-label="Go Back"><i class="fas fa-arrow-left"></i></button>
+            <h2 id="dashListTitle">Details</h2>
+        </div>
+        <div class="fullpage-body" id="dashListBody"></div>
+    </div>
+
+    <script src="script.js"></script>
+    <!-- Notifications Fullpage -->
+    <div id="notificationsPage" class="fullpage" style="display:none;">
+        <div class="fullpage-header">
+            <button id="notificationsBack" class="back-btn" aria-label="Go Back"><i class="fas fa-arrow-left"></i></button>
+            <h2 id="notificationsTitle">Notifications</h2>
+        </div>
+        <div class="fullpage-body" id="notificationsBody"></div>
+    </div>
+    
+    <!-- Notes Fullpage (list/detail) -->
+    <div id="notesPage" class="fullpage" style="display:none;">
+        <div class="fullpage-header">
+            <button id="notesBack" class="back-btn" aria-label="Go Back"><i class="fas fa-arrow-left"></i></button>
+            <h2 id="notesPageTitle">Notes</h2>
+        </div>
+        <div class="fullpage-body" id="notesPageBody"></div>
+    </div>
+
+    <!-- Dashboard Lists Fullpage -->
+    <div id="dashListPage" class="fullpage" style="display:none;">
+        <div class="fullpage-header">
+            <button id="dashListBack" class="back-btn" aria-label="Go Back"><i class="fas fa-arrow-left"></i></button>
+            <h2 id="dashListTitle">Details</h2>
+        </div>
+        <div class="fullpage-body" id="dashListBody"></div>
+    </div>
+    <!-- Login Modal -->
+<div id="authModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeAuthModal()">&times;</span>
+        
+        <div id="loginForm">
+            <h2>Login to NextHorizon</h2>
+            <input type="email" id="loginEmail" placeholder="Your Email">
+            <input type="password" id="loginPassword" placeholder="Your Password">
+            <button onclick="handleLogin()" class="btn-primary">Login</button>
+            <p>New here? <a href="#" onclick="showRegisterForm()">Create Account</a></p>
+        </div>
+        
+        <div id="registerForm" style="display: none;">
+            <h2>Join NextHorizon</h2>
+            <input type="text" id="registerUsername" placeholder="Username">
+            <input type="email" id="registerEmail" placeholder="Email">
+            <input type="password" id="registerPassword" placeholder="Password">
+            <button onclick="handleRegister()" class="btn-primary">Create Account</button>
+            <p>Already have an account? <a href="#" onclick="showLoginForm()">Login here</a></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
