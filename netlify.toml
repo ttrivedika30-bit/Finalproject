@@ -1,0 +1,8 @@
+[build]
+  publish = "."        # <-- change to the folder where your index.html lives
+  functions = "netlify/functions"
+
+[dev]
+  publish = "."        # same as above
+  functions = "netlify/functions"
+  port = 8888
