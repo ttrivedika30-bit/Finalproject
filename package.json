@@ -1,0 +1,25 @@
+{
+  "name": "project",
+  "version": "1.0.0",
+  "description": "A modern, responsive learning platform dashboard built with HTML, CSS, and JavaScript. This website matches the Figma design you provided and includes all the requested features.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ttrivedika30-bit/Finalproject.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ttrivedika30-bit/Finalproject/issues"
+  },
+  "homepage": "https://github.com/ttrivedika30-bit/Finalproject#readme",
+  "dependencies": {
+    "@ibm-cloud/cloudant": "^0.12.9",
+    "@netlify/functions": "^4.2.6",
+    "ibm-cloud-sdk-core": "^5.4.3"
+  }
+}
