@@ -160,7 +160,23 @@ document.addEventListener('DOMContentLoaded', function() {
             .filter(b => /choose files|upload syllabus|upload document/i.test(b.textContent || ''));
         const uploadAreas = root.querySelectorAll('.upload-area');
         triggers.forEach(btn => {
-            btn.addEventListener('click', () => globalFileInput && globalFileInput.click());
+            btn.addEventListener('click', () => {
+                // Also perform Netlify upload flow when user clicks Upload Document
+                if (/upload document/i.test(btn.textContent||'')) {
+                    if (globalFileInput) {
+                        // First open picker, then upon selection, trigger netlify upload
+                        const once = (e)=>{
+                            globalFileInput.removeEventListener('change', once);
+                            const file = (globalFileInput.files||[])[0];
+                            if (file) uploadFromInput(file);
+                        };
+                        globalFileInput.addEventListener('change', once);
+                        globalFileInput.click();
+                    }
+                    return;
+                }
+                if (globalFileInput) globalFileInput.click();
+            });
         });
         uploadAreas.forEach(area => {
             area.addEventListener('click', (e) => {
@@ -169,6 +185,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+    }
+
+    // Attach Netlify profile action to top-right user avatar click
+    if (userAvatar) userAvatar.addEventListener('click', (e)=>{
+        // keep dropdown behavior but also fetch profile in background
+        try { callGetProfile(); } catch {}
+    });
+
+    // Netlify Identity helpers (re-added, headless)
+    async function callGetProfile() {
+        const netlifyIdentity = window.netlifyIdentity;
+        if (!netlifyIdentity) { alert('Netlify Identity not loaded'); return; }
+        const currentUser = netlifyIdentity.currentUser();
+        if (!currentUser) { netlifyIdentity.open(); return; }
+        try {
+            const token = (await currentUser.jwt()).access_token;
+            const res = await fetch('/.netlify/functions/getProfile', { headers: { 'Authorization': 'Bearer ' + token } });
+            const json = await res.json();
+            console.log('profile result:', json);
+        } catch (e) {
+            console.error('getProfile failed', e);
+        }
+    }
+    async function uploadSyllabusViaNetlify() {
+        const netlifyIdentity = window.netlifyIdentity;
+        if (!netlifyIdentity) { alert('Netlify Identity not loaded'); return; }
+        const files = Array.from((document.getElementById('file')||{}).files||[]);
+        const f = files[0];
+        if (!f) { if (globalFileInput && globalFileInput.files && globalFileInput.files[0]) { return uploadFromInput(globalFileInput.files[0]); } alert('select file'); return; }
+        uploadFromInput(f);
+    }
+    async function uploadFromInput(f){
+        const netlifyIdentity = window.netlifyIdentity;
+        const currentUser = netlifyIdentity.currentUser();
+        if (!currentUser) { netlifyIdentity.open(); return; }
+        const reader = new FileReader();
+        reader.onload = async () => {
+            try {
+                const base64 = reader.result.split(',')[1];
+                const token = (await currentUser.jwt()).access_token;
+                const body = { filename: f.name, contentType: f.type, dataBase64: base64 };
+                const res = await fetch('/.netlify/functions/uploadSyllabus', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(body)
+                });
+                const j = await res.json();
+                console.log('upload response', j);
+            } catch (e) {
+                console.error('upload failed', e);
+            }
+        };
+        reader.readAsDataURL(f);
     }
 
     // Uploads persistence
